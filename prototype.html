@@ -1,0 +1,372 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AR Camera Motion for Blender: Prototype</title>
+
+  <style>
+    :root{
+      --bg:#0f1115;
+      --text:#e7e9ee;
+      --muted:#a9b0c1;
+      --line:#2a3142;
+
+      --accent:#7aa2ff;
+      --good:#43d17b;
+
+      --radius:16px;
+      --shadow: 0 12px 30px rgba(0,0,0,.35);
+      --font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    }
+
+    *{ box-sizing:border-box; }
+
+    body{
+      margin:0;
+      font-family:var(--font);
+      color:var(--text);
+      background:linear-gradient(180deg, #0b0d12, var(--bg));
+    }
+
+    .wrap{
+      max-width:1020px;
+      margin:0 auto;
+      padding:22px 16px 50px;
+      display:grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap:16px;
+    }
+
+    header{
+      grid-column:1/-1;
+      display:flex;
+      justify-content:space-between;
+      align-items:flex-end;
+      gap:12px;
+      padding:10px 6px;
+    }
+
+    header h1{
+      margin:0;
+      font-size:18px;
+      font-weight:800;
+    }
+
+    header .sub{
+      margin-top:4px;
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--radius);
+      overflow:hidden;
+      box-shadow:var(--shadow);
+      background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
+    }
+
+    .card .hd{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--line);
+      background:rgba(0,0,0,.14);
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+    }
+
+    .card .hd h2{
+      margin:0;
+      font-size:12px;
+      letter-spacing:.35px;
+      text-transform:uppercase;
+      color:var(--muted);
+    }
+
+    .card .bd{ padding:14px; }
+
+    .tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+
+    .tab{
+      cursor:pointer;
+      user-select:none;
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:700;
+    }
+
+    .tab.active{
+      color:var(--text);
+      border-color: rgba(122,162,255,.55);
+      background: rgba(122,162,255,.12);
+    }
+
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+
+    .btn{
+      border:1px solid var(--line);
+      background:rgba(255,255,255,.04);
+      color:var(--text);
+      padding:10px 12px;
+      border-radius:12px;
+      font-weight:700;
+      cursor:pointer;
+    }
+
+    .btn.primary{
+      border-color: rgba(122,162,255,.55);
+      background: rgba(122,162,255,.12);
+    }
+
+    .btn.small{
+      padding:8px 10px;
+      border-radius:10px;
+      font-size:12px;
+    }
+
+    .name{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background:rgba(255,255,255,.02);
+    }
+    .name .G{ color:var(--muted); font-size:12px; }
+    .name .View{ margin-top:6px; font-size:13px; line-height:1.3; }
+
+    .timeline{
+      border:1px solid var(--line);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      padding:12px;
+      display:grid;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .hint{ color:var(--muted); font-size:12px; line-height:1.35; }
+
+    .phone{
+      width:100%;
+      aspect-ratio: 9/16;
+      border-radius:28px;
+      border:1px solid var(--line);
+      background:#0c0f16;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .topbar{
+      height:48px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:0 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background:rgba(255,255,255,.02);
+      font-size:12px;
+      color:var(--muted);
+    }
+
+    .screen{
+      position:absolute;
+      inset:48px 0 0 0;
+      display:none;
+    }
+    .screen.active{ display:block; }
+
+    .viewport{
+      border:1px dashed rgba(255,255,255,.14);
+      border-radius:14px;
+      background:rgba(255,255,255,.02);
+      padding:14px;
+      min-height:420px;
+      position:relative;
+      overflow:hidden;
+    }
+
+    .viewport .label{
+      position:absolute;
+      top:12px; left:12px;
+      color:rgba(255,255,255,.72);
+      font-size:12px;
+      background:rgba(0,0,0,.25);
+      border:1px solid rgba(255,255,255,.10);
+      padding:6px 8px;
+      border-radius:10px;
+    }
+
+    .viewport .hud{
+      position:absolute;
+      left:12px; bottom:12px; right:12px;
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .badge{
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.25);
+      border-radius:12px;
+      padding:8px 10px;
+      font-size:12px;
+      color:rgba(255,255,255,.76);
+    }
+
+    @media (max-width: 920px){
+      .wrap{ grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>AR Camera Motion for Blender</h1>
+        <div class="sub">Static prototype (UI mock only).</div>
+      </div>
+    </header>
+
+    <section class="card">
+      <div class="hd">
+        <h2>Mobile UI tabs</h2>
+        <div class="tabs" role="tablist" aria-label="Screens">
+          <div class="tab active" data-screen="activation" role="tab" aria-selected="true">Activation</div>
+          <div class="tab" data-screen="AR View" role="tab" aria-selected="false">AR View</div>
+          <div class="tab" data-screen="Playback" role="tab" aria-selected="false">Playback</div>
+          <div class="tab" data-screen="settings" role="tab" aria-selected="false">Settings</div>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="phone">
+          <div class="topbar">
+            <span>AR Camera</span>
+            <span>12:34</span>
+          </div>
+
+          <div class="screen active" id="screen-activation">
+            <div style="padding:14px;">
+              <div class="name">
+                <div class="G">Goal</div>
+                <div class="View">Connect your phone and enter AR mode to preview your Blender scene.</div>
+              </div>
+
+              <div class="timeline">
+                <div class="hint"><strong>Step 1</strong> — Choose connection</div>
+                <div class="row">
+                  <button class="btn small" type="button">WiFi</button>
+                  <button class="btn small" type="button">USB</button>
+                </div>
+
+                <div class="hint"><strong>Step 2</strong> — Enter AR Mode</div>
+                <div class="row">
+                  <button class="btn primary" type="button">Connect</button>
+                  <button class="btn" type="button">Enter AR Mode</button>
+                </div>
+              </div>
+
+              <div class="name" style="margin-top:12px;">
+                <div class="G">Instruction:</div>
+                <div class="View">Record handheld motion and generate camera keyframes without fighting the graph editor.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="screen" id="screen-settings">
+            <div style="padding:14px;">
+              <div class="name">
+                <div class="G">Camera Controls</div>
+                <div class="View">Tune the recorded motion.</div>
+              </div>
+
+              <div class="timeline">
+                <div class="hint"><strong>Controls</strong></div>
+
+                <div class="hint">Speed</div>
+                <input type="range" min="50" max="200" value="100" />
+
+                <div class="hint">Smoothing</div>
+                <input type="range" min="0" max="100" value="35" />
+
+                <div class="hint">Distance Scale</div>
+                <input type="range" min="50" max="200" value="100" />
+
+                <div class="row" style="margin-top:6px;">
+                  <button class="btn primary" type="button">Save</button>
+                  <button class="btn" type="button">Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="hd">
+        <h2>Desktop / Blender Side</h2>
+        <div class="row">
+          <button class="btn small" type="button">Camera</button>
+          <button class="btn small" type="button">Timeline</button>
+          <button class="btn small" type="button">Graph</button>
+        </div>
+      </div>
+
+      <div class="bd">
+        <div class="viewport">
+          <div class="label">Blender Viewport</div>
+
+          <div style="margin-top:44px;">
+            <div class="name">
+              <div class="G">What this prototype represents</div>
+              <div class="View">A workflow where users record phone motion and then apply it to a Blender virtual camera.</div>
+            </div>
+          </div>
+
+          <div class="hud">
+            <div class="badge">Selected: Camera_01</div>
+            <div class="badge">Motion: Not Applied</div>
+            <div class="badge">Keyframes: —</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const tabs = document.querySelectorAll(".tab");
+
+    const screens = {
+      activation: document.getElementById("screen-activation"),
+      settings: document.getElementById("screen-settings"),
+    };
+
+    function setActive(name){
+      tabs.forEach(t => {
+        const on = t.dataset.screen === name;
+        t.classList.toggle("active", on);
+        t.setAttribute("aria-selected", on ? "true" : "false");
+      });
+
+      Object.keys(screens).forEach(k => {
+        screens[k].classList.toggle("active", k === name);
+      });
+    }
+
+    tabs.forEach(t => t.addEventListener("click", () => setActive(t.dataset.screen)));
+  </script>
+</body>
+</html>
