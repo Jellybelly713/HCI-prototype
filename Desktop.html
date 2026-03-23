@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Camera Motion Tool for Blender - Desktop</title>
+  <style>
+    :root{
+      --bg:#0f1115;
+      --text:#e7e9ee;
+      --muted:#a9b0c1;
+      --line:#2a3142;
+      --accent:#7aa2ff;
+      --radius:16px;
+      --shadow:0 12px 30px rgba(0,0,0,.35);
+      --font:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+    }
+
+    * { box-sizing:border-box; }
+
+    html, body {
+      margin:0;
+      min-height:100%;
+      font-family:var(--font);
+      color:var(--text);
+      background:linear-gradient(180deg, #0b0d12, var(--bg));
+    }
+
+    .app {
+      max-width:1400px;
+      margin:0 auto;
+      padding:20px 16px 32px;
+    }
+
+    .topbar {
+      margin-bottom:16px;
+    }
+
+    .title h1 {
+      margin:0;
+      font-size:22px;
+      font-weight:800;
+    }
+
+    .desktop-shell {
+      background:#070910;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:14px;
+    }
+
+    .desktop-tabs {
+      display:flex;
+      justify-content:center;
+      gap:40px;
+      margin:6px 0 14px;
+    }
+
+    .desktop-tab {
+      padding:8px 14px;
+      font-size:12px;
+      color:var(--muted);
+      background:rgba(122,162,255,.10);
+      border:1px solid rgba(122,162,255,.25);
+      border-radius:6px;
+    }
+
+    .desktop-main {
+      position:relative;
+      border:1px solid rgba(122,162,255,.55);
+      border-radius:4px;
+      overflow:hidden;
+      background:#1b1d25;
+      min-height:560px;
+    }
+
+    .viewport-image {
+      width:100%;
+      display:block;
+      min-height:560px;
+      object-fit:cover;
+      background:#20232b;
+    }
+
+    .viewport-empty {
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      color:rgba(255,255,255,.35);
+      font-size:18px;
+      pointer-events:none;
+    }
+
+    .desktop-hud {
+      position:absolute;
+      top:16px;
+      left:16px;
+      right:16px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      pointer-events:none;
+    }
+
+    .hud-boxes {
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      pointer-events:auto;
+    }
+
+    .hud-box {
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(0,0,0,.35);
+      font-size:12px;
+      color:rgba(255,255,255,.82);
+      backdrop-filter:blur(5px);
+    }
+
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="topbar">
+      <div class="title">
+        <h1>Camera Motion Tool for Blender</h1>
+      </div>
+    </div>
+
+      <div class="card-body">
+        <div class="desktop-shell">
+          <div class="desktop-tabs">
+            <div class="desktop-tab">Camera</div>
+            <div class="desktop-tab">Timeline</div>
+            <div class="desktop-tab">Graph</div>
+          </div>
+
+          <div class="desktop-main">
+            <img id="viewportImage" class="viewport-image" alt="Blender viewport preview" />
+            <div id="viewportEmpty" class="viewport-empty">No device connected</div>
+
+            <div class="desktop-hud">
+              <div class="hud-boxes">
+                <div class="hud-box" id="selectedCameraHud">Selected: Camera_01</div>
+                <div class="hud-box" id="motionStatusHud">Motion: Not Applied</div>
+                <div class="hud-box" id="keyframesHud">Keyframes: —</div>
+              </div>
+
+              <div class="hud-boxes">
+                <div class="hud-box" id="phoneConnectionHud">Phone: Not Connected</div>
+                <div class="hud-box" id="connectionTypeHud">Connection: —</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+  </div>
+
+  <script>
+    const state = {
+      selectedCamera: "Camera_01",
+      connectionType: "—",
+      motionStatus: "Not Applied",
+      keyframes: "—",
+      viewportImage: ""
+    };
+
+    const selectedCameraHud = document.getElementById("selectedCameraHud");
+    const motionStatusHud = document.getElementById("motionStatusHud");
+    const keyframesHud = document.getElementById("keyframesHud");
+    const phoneConnectionHud = document.getElementById("phoneConnectionHud");
+    const connectionTypeHud = document.getElementById("connectionTypeHud");
+
+    const viewportImage = document.getElementById("viewportImage");
+    const viewportEmpty = document.getElementById("viewportEmpty");
+
+    function updateUI() {
+      selectedCameraHud.textContent = `Selected: ${state.selectedCamera}`;
+      motionStatusHud.textContent = `Motion: ${state.motionStatus}`;
+      keyframesHud.textContent = `Keyframes: ${state.keyframes}`;
+      phoneConnectionHud.textContent = `Phone: Not Connected`;
+      connectionTypeHud.textContent = `Connection: ${state.connectionType}`;
+
+      if (state.viewportImage) {
+        viewportImage.src = state.viewportImage;
+        viewportImage.style.display = "block";
+        viewportEmpty.style.display = "none";
+      } else {
+        viewportImage.removeAttribute("src");
+        viewportImage.style.display = "none";
+        viewportEmpty.style.display = "flex";
+      }
+    }
+
+    updateUI();
+  </script>
+</body>
+</html>
